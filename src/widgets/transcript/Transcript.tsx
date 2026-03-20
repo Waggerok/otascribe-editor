@@ -1,16 +1,19 @@
 import { TabsContent } from '@/components/ui/tabs';
 import React from 'react';
+import replicaData from '@/shared/consts/replica.json';
+import EditorProvider from './new-editor/EditorProvider';
 
 interface TranscriptProps {
-    contentValue : string;
+    contentValue: string;
 }
 
-export const Transcript: React.FC<TranscriptProps> = ({ contentValue }) =>
-{
+export const Transcript: React.FC<TranscriptProps> = ({ contentValue }) => {
+    
+    const sentences = replicaData.transcription_result.sentences;
 
     return (
-        <TabsContent value={contentValue}>
-            1
+        <TabsContent value={contentValue} className="h-full overflow-y-auto mt-0 pt-4 px-6 outline-none">
+            <EditorProvider sentences={sentences} />
         </TabsContent>
     );
-}
+};
