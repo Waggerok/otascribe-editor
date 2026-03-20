@@ -1,49 +1,36 @@
 import React, { useRef, useEffect } from 'react';
 import { AvatarNode } from './AvatarNode';
-import type { FocusPosition } from '../EditorProvider';
+import { useEditor } from '../context/EditorContext';
 
 interface ReplicaNodeProps {
-    speakerId: number;
-    initialText: string;
-    onChange?: (newText: string) => void;
-    onSplit?: (textBefore: string, textAfter: string) => void;
-    onMergeWithPrevious?: (textToMerge: string) => void;
-    onNavigateUp?: () => void;
-    onNavigateDown?: () => void;
-    onFocus?: () => void;
-    focusPosition?: FocusPosition;
+    index: number;
 }
 
-export const ReplicaNode: React.FC<ReplicaNodeProps> = ({ 
-    speakerId, 
-    initialText, 
-    onChange, 
-    onSplit, 
-    onMergeWithPrevious,
-    onNavigateUp,
-    onNavigateDown,
-    onFocus,
-    focusPosition
-}) => {
+export const ReplicaNode: React.FC<ReplicaNodeProps> = ({ index }) => {
     const editorRef = useRef<HTMLDivElement>(null);
-    const lastReportedText = useRef(initialText);
+    const editorCtx = useEditor();
+    
+    const sentence = editorCtx.sentences[index];
+    const initialText = sentence.text;
+    const focusPosition = editorCtx.activeNode?.index === index ? editorCtx.activeNode.position : null;
+    const speakerId = sentence.speaker_id;
 
-    // We use a completely uncontrolled component approach for typing, 
-    // but manually update it when initialText changes externally.
+    const lastReportedHtml = useRef(initialText);
+
     // Initialize content once on mount.
     useEffect(() => {
-        if (editorRef.current && editorRef.current.textContent !== initialText) {
-            editorRef.current.textContent = initialText;
-            lastReportedText.current = initialText;
+        if (editorRef.current && editorRef.current.innerHTML !== initialText) {
+            editorRef.current.innerHTML = initialText;
+            lastReportedHtml.current = initialText;
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Only run once on mount
 
     // Sync external text changes (e.g., from split) to the DOM safely
     useEffect(() => {
-        if (initialText !== lastReportedText.current && editorRef.current) {
-            editorRef.current.textContent = initialText;
-            lastReportedText.current = initialText;
+        if (initialText !== lastReportedHtml.current && editorRef.current) {
+            editorRef.current.innerHTML = initialText;
+            lastReportedHtml.current = initialText;
         }
     }, [initialText]);
 
@@ -99,57 +86,33 @@ export const ReplicaNode: React.FC<ReplicaNodeProps> = ({
     }, [focusPosition]);
 
     const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
-        const newText = e.currentTarget.textContent || '';
-        if (newText !== lastReportedText.current) {
-            lastReportedText.current = newText;
-            if (onChange) {
-                onChange(newText);
-            }
+        const newHtml = e.currentTarget.innerHTML || '';
+        if (newHtml !== lastReportedHtml.current) {
+            lastReportedHtml.current = newHtml;
+            editorCtx.updateSentence(index, newHtml);
         }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-        const currentTarget = e.currentTarget;
-        const textContent = currentTarget.textContent || '';
-        
-        const selection = window.getSelection();
-        if (!selection || selection.rangeCount === 0) return;
-        
-        const range = selection.getRangeAt(0);
-
-        // Get absolute offset
-        const preSelectionRange = range.cloneRange();
-        preSelectionRange.selectNodeContents(currentTarget);
-        preSelectionRange.setEnd(range.startContainer, range.startOffset);
-        const startOffset = preSelectionRange.toString().length;
-
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            const textBefore = textContent.slice(0, startOffset);
-            const textAfter = textContent.slice(startOffset);
-            if (onSplit) {
-                onSplit(textBefore, textAfter);
-            }
-        } else if (e.key === 'Backspace') {
-            if (startOffset === 0 && onMergeWithPrevious) {
-                e.preventDefault();
-                onMergeWithPrevious(textContent);
-            }
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            if (onNavigateUp) {
-                onNavigateUp();
-            }
-        } else if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            if (onNavigateDown) {
-                onNavigateDown();
+        const nodeCtx = { index, sentence, editorRef };
+        for (const plugin of editorCtx.plugins) {
+            if (plugin.onKeyDown) {
+                const handled = plugin.onKeyDown(e, nodeCtx, editorCtx);
+                if (handled) break; // Stop processing other plugins if handled
             }
         }
     };
 
-    // We use a completely uncontrolled component approach for typing, 
-    // but manually update it when initialText changes externally.
+    const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+        const nodeCtx = { index, sentence, editorRef };
+        for (const plugin of editorCtx.plugins) {
+            if (plugin.onPaste) {
+                const handled = plugin.onPaste(e, nodeCtx, editorCtx);
+                if (handled) break; // Stop processing other plugins if handled
+            }
+        }
+    };
+
     return (
         <div className="flex gap-4 items-start group hover:bg-white/5 p-2 -mx-2 rounded-lg transition-colors">
             <AvatarNode speaker={{ id: speakerId, name: `C${speakerId + 1}` }} />
@@ -160,13 +123,9 @@ export const ReplicaNode: React.FC<ReplicaNodeProps> = ({
                 suppressContentEditableWarning={true}
                 onInput={handleInput}
                 onKeyDown={handleKeyDown}
-                onFocus={onFocus}
+                onPaste={handlePaste}
+                onFocus={() => editorCtx.setActiveNode({ index, position: null })}
             >
-                {/* 
-                    Only set content on mount. 
-                    React won't touch this div's children anymore because it has no React children or dangerouslySetInnerHTML.
-                    We manage its content manually via refs.
-                */}
             </div>
         </div>
     );
