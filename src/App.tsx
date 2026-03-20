@@ -1,9 +1,13 @@
-import { AppRouter } from "./app/providers/AppRouter"
+import { AppRouter } from "@/app/providers/AppRouter"
+import ModalManager from "@/widgets/modals/ModalManager"
 
 export function App() {
-  return (
-    <AppRouter />
-  )
+    return (
+        <>
+            <ModalManager/>
+            <AppRouter />
+        </>
+    )
 }
 
 export default App
