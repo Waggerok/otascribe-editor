@@ -72,16 +72,8 @@ export const SpeakerDropdown: React.FC<SpeakerDropdownProps> = ({ sentenceIndex 
                         return (
                             <DropdownMenuItem
                                 key={speaker.id}
-                                onSelect={(e) => {
-                                    if (isEditing) {
-                                        e.preventDefault();
-                                        return;
-                                    }
-                                    const target = (e as Event & { originalEvent?: Event }).originalEvent?.target as HTMLElement;
-                                    if (target && target.closest('.action-btn')) {
-                                        e.preventDefault();
-                                        return;
-                                    }
+                                onClick={(e) => {
+                                    e.preventDefault();
                                     updateSpeaker(sentenceIndex, speaker.id, speaker.name);
                                 }}
                                 className={speaker.id === speakerId && !isEditing ? "bg-accent" : ""}

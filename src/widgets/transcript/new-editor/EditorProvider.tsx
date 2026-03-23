@@ -29,9 +29,9 @@ const EditorProvider: React.FC<EditorProviderProps> = ({
     }, [sentencesLength]);
 
     return (
-        <div className="flex flex-col h-200 relative">
+        <div className="flex flex-col h-200">
             <Menu/>
-            <div className="flex flex-col pb-20">
+            <div className="flex flex-col overflow-auto overflow-x-hidden">
                 {renderNodes}
             </div>
         </div>

@@ -17,7 +17,7 @@ export const Menu: React.FC = () => {
     const canRedo = useEditorStore(state => state.historyIndex < state.history.length - 1);
 
     return (
-        <div className="sticky bg-card -top-6 z-1 flex items-center gap-2 pt-6 mb-4">
+        <div className="bg-car flex items-center gap-2 mb-2">
             <ButtonGroup>
                 <Button variant="outline" onClick={undo} disabled={!canUndo}>
                     <Undo2Icon />
