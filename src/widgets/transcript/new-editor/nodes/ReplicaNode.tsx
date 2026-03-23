@@ -79,11 +79,7 @@ const ReplicaNodeComponent: React.FC<ReplicaNodeProps> = ({ index }) => {
                 }
             } else {
                 range.selectNodeContents(editorRef.current);
-                if (focusPosition === 'start') {
-                    range.collapse(true); // collapse to start
-                } else {
-                    range.collapse(false); // collapse to end
-                }
+                range.collapse(focusPosition === 'start');
             }
             
             selection.removeAllRanges();
@@ -129,7 +125,7 @@ const ReplicaNodeComponent: React.FC<ReplicaNodeProps> = ({ index }) => {
             {showTimings && <TimeNode startMilliseconds={sentence.start_millis} endMilliseconds={sentence.end_millis} />}
             <div
                 ref={editorRef}
-                className="flex-1 text-[15px] leading-relaxed text-gray-200 outline-none cursor-text break-words whitespace-pre-wrap"
+                className="flex-1 text-[15px] leading-relaxed text-gray-200 outline-none cursor-text wrap-break-word whitespace-pre-wrap"
                 contentEditable={true}
                 suppressContentEditableWarning={true}
                 onInput={handleInput}
