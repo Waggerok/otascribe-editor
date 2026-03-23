@@ -38,26 +38,9 @@ export const MergePlugin: EditorPlugin = {
             const startOffset = getSelectionOffset(nodeCtx.editorRef.current);
             if (startOffset === 0) {
                 e.preventDefault();
-                // Send innerHTML instead of textContent to preserve formatting
                 editorCtx.mergeWithPrevious(nodeCtx.index, nodeCtx.editorRef.current.innerHTML);
                 return true;
             }
-        }
-    }
-};
-
-export const BoldPlugin: EditorPlugin = {
-    name: 'Bold',
-    onKeyDown: (e, nodeCtx, editorCtx) => {
-        // Handle Ctrl+B or Cmd+B
-        if (e.key === 'b' && (e.ctrlKey || e.metaKey)) {
-            e.preventDefault();
-            document.execCommand('bold');
-            // After formatting, update the sentence to save the new HTML
-            if (nodeCtx.editorRef.current) {
-                editorCtx.updateSentence(nodeCtx.index, nodeCtx.editorRef.current.innerHTML);
-            }
-            return true;
         }
     }
 };
@@ -66,14 +49,8 @@ export const PastePlugin: EditorPlugin = {
     name: 'Paste',
     onPaste: (e, nodeCtx, editorCtx) => {
         e.preventDefault();
-        
-        // Get plain text from clipboard
         const text = e.clipboardData.getData('text/plain');
-        
-        // Insert as plain text (this naturally replaces selection and handles cursor)
         document.execCommand('insertText', false, text);
-        
-        // Trigger an update so the context knows about the new HTML
         if (nodeCtx.editorRef.current) {
             editorCtx.updateSentence(nodeCtx.index, nodeCtx.editorRef.current.innerHTML);
         }
@@ -86,6 +63,5 @@ export const BasePlugins = [
     NavigationPlugin,
     SplitPlugin,
     MergePlugin,
-    BoldPlugin,
     PastePlugin
 ];

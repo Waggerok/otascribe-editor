@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
-import { AvatarNode } from './AvatarNode';
-import { useEditor } from '../context/EditorContext';
+import { useEditorStore } from '../store/editorStore';
+import { SpeakerDropdown } from './SpeakerDropdown';
 
 interface ReplicaNodeProps {
     index: number;
@@ -8,12 +8,17 @@ interface ReplicaNodeProps {
 
 export const ReplicaNode: React.FC<ReplicaNodeProps> = ({ index }) => {
     const editorRef = useRef<HTMLDivElement>(null);
-    const editorCtx = useEditor();
     
-    const sentence = editorCtx.sentences[index];
-    const initialText = sentence.text;
-    const focusPosition = editorCtx.activeNode?.index === index ? editorCtx.activeNode.position : null;
-    const speakerId = sentence.speaker_id;
+    const sentence = useEditorStore(state => state.sentences[index]);
+    const focusPosition = useEditorStore(state => 
+        state.activeNode?.index === index ? state.activeNode.position : null
+    );
+    const plugins = useEditorStore(state => state.plugins);
+    
+    const updateSentence = useEditorStore(state => state.updateSentence);
+    const setActiveNode = useEditorStore(state => state.setActiveNode);
+
+    const initialText = sentence?.text || '';
 
     const lastReportedHtml = useRef(initialText);
 
@@ -89,13 +94,14 @@ export const ReplicaNode: React.FC<ReplicaNodeProps> = ({ index }) => {
         const newHtml = e.currentTarget.innerHTML || '';
         if (newHtml !== lastReportedHtml.current) {
             lastReportedHtml.current = newHtml;
-            editorCtx.updateSentence(index, newHtml);
+            updateSentence(index, newHtml);
         }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
         const nodeCtx = { index, sentence, editorRef };
-        for (const plugin of editorCtx.plugins) {
+        const editorCtx = useEditorStore.getState();
+        for (const plugin of plugins) {
             if (plugin.onKeyDown) {
                 const handled = plugin.onKeyDown(e, nodeCtx, editorCtx);
                 if (handled) break; // Stop processing other plugins if handled
@@ -105,7 +111,8 @@ export const ReplicaNode: React.FC<ReplicaNodeProps> = ({ index }) => {
 
     const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
         const nodeCtx = { index, sentence, editorRef };
-        for (const plugin of editorCtx.plugins) {
+        const editorCtx = useEditorStore.getState();
+        for (const plugin of plugins) {
             if (plugin.onPaste) {
                 const handled = plugin.onPaste(e, nodeCtx, editorCtx);
                 if (handled) break; // Stop processing other plugins if handled
@@ -113,9 +120,11 @@ export const ReplicaNode: React.FC<ReplicaNodeProps> = ({ index }) => {
         }
     };
 
+    if (!sentence) return null;
+
     return (
-        <div className="flex gap-4 items-start group hover:bg-white/5 p-2 -mx-2 rounded-lg transition-colors">
-            <AvatarNode speaker={{ id: speakerId, name: `C${speakerId + 1}` }} />
+        <div className="flex gap-4 items-start hover:bg-white/5 p-2 -mx-2 rounded-lg transition-colors">
+            <SpeakerDropdown sentenceIndex={index} />
             <div
                 ref={editorRef}
                 className="flex-1 text-[15px] leading-relaxed text-gray-200 outline-none cursor-text break-words whitespace-pre-wrap"
@@ -124,9 +133,8 @@ export const ReplicaNode: React.FC<ReplicaNodeProps> = ({ index }) => {
                 onInput={handleInput}
                 onKeyDown={handleKeyDown}
                 onPaste={handlePaste}
-                onFocus={() => editorCtx.setActiveNode({ index, position: null })}
-            >
-            </div>
+                onFocus={() => setActiveNode({ index, position: null })}
+            />
         </div>
     );
 };

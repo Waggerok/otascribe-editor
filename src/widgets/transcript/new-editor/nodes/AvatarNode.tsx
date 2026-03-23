@@ -9,10 +9,13 @@ export interface Speaker {
 
 export const AvatarNode = memo(({ speaker }: { speaker: Speaker }) => {
     return (
-        <Avatar className="size-6 text-[10px] text-white">
-            <AvatarFallback style={{ backgroundColor: getSpeakerColor(speaker?.name) }}>
-                {getInitials(speaker?.name, 2)}
-            </AvatarFallback>
-        </Avatar>
+        <div className='flex items-center gap-2'>
+            <Avatar className="size-6 text-[10px] text-white">
+                <AvatarFallback style={{ backgroundColor: getSpeakerColor(speaker?.name) }}>
+                    {getInitials(speaker?.name, 2)}
+                </AvatarFallback>
+            </Avatar>
+        </div>
+
     );
 });
