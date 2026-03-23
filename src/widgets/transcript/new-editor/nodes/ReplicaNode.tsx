@@ -7,11 +7,13 @@ interface ReplicaNodeProps {
     index: number;
 }
 
-export const ReplicaNode: React.FC<ReplicaNodeProps> = ({ index }) => {
+const ReplicaNodeComponent: React.FC<ReplicaNodeProps> = ({ index }) => {
     const editorRef = useRef<HTMLDivElement>(null);
     
     const sentence = useEditorStore(state => state.sentences[index]);
-    const {showTimings, plugins, showUsers} = useEditorStore();
+    const showTimings = useEditorStore(state => state.showTimings);
+    const plugins = useEditorStore(state => state.plugins);
+    const showUsers = useEditorStore(state => state.showUsers);
     const focusPosition = useEditorStore(state =>  state.activeNode?.index === index ? state.activeNode.position : null);
     
     const updateSentence = useEditorStore(state => state.updateSentence);
@@ -138,3 +140,5 @@ export const ReplicaNode: React.FC<ReplicaNodeProps> = ({ index }) => {
         </div>
     );
 };
+
+export const ReplicaNode = React.memo(ReplicaNodeComponent);

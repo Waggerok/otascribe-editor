@@ -24,8 +24,8 @@ export interface EditorStoreState extends EditorState {
 }
 
 export const useEditorStore = create<EditorStoreState>((set, get) => ({
-    showUsers: false,
-    showTimings: false,
+    showUsers: true,
+    showTimings: true,
     toggleTimings: () => set((state) => ({ showTimings: !state.showTimings })),
     toggleUsers: () => set((state) => ({ showUsers: !state.showUsers })),
     sentences: [],

@@ -6,11 +6,15 @@ import { useEditorStore } from './store/editorStore';
 
 export const Menu: React.FC = () => {
 
-    const historyLength = useEditorStore(state => state.history.length);
-    const {showTimings, toggleTimings, showUsers, toggleUsers, undo, redo, historyIndex} = useEditorStore();
+    const showTimings = useEditorStore(state => state.showTimings);
+    const toggleTimings = useEditorStore(state => state.toggleTimings);
+    const showUsers = useEditorStore(state => state.showUsers);
+    const toggleUsers = useEditorStore(state => state.toggleUsers);
+    const undo = useEditorStore(state => state.undo);
+    const redo = useEditorStore(state => state.redo);
     
-        const canUndo = historyIndex > 0;
-        const canRedo = historyIndex < historyLength - 1;
+    const canUndo = useEditorStore(state => state.historyIndex > 0);
+    const canRedo = useEditorStore(state => state.historyIndex < state.history.length - 1);
 
     return (
         <div className="sticky bg-card -top-6 z-1 flex items-center gap-2 pt-6 mb-4">
