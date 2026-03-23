@@ -27,7 +27,7 @@ const EditorProvider: React.FC<EditorProviderProps> = ({
     }, [sentencesLength]);
 
     return (
-        <div className="flex flex-col gap-5 pb-20 h-200">
+        <div className="flex flex-col pb-20 h-200">
             {renderNodes}
         </div>
     );

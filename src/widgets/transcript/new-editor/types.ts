@@ -18,12 +18,12 @@ export interface EditorNodeContext {
 
 export interface EditorPlugin {
     name: string;
-    onKeyDown?: (e: React.KeyboardEvent<HTMLDivElement>, nodeCtx: EditorNodeContext, editorCtx: EditorContextState) => boolean | void;
-    onPaste?: (e: React.ClipboardEvent<HTMLDivElement>, nodeCtx: EditorNodeContext, editorCtx: EditorContextState) => boolean | void;
+    onKeyDown?: (e: React.KeyboardEvent<HTMLDivElement>, nodeCtx: EditorNodeContext, editorState: EditorState) => boolean | void;
+    onPaste?: (e: React.ClipboardEvent<HTMLDivElement>, nodeCtx: EditorNodeContext, editorState: EditorState) => boolean | void;
     // return true to indicate the event was handled and propagation should stop
 }
 
-export interface EditorContextState {
+export interface EditorState {
     sentences: Sentence[];
     activeNode: { index: number, position: FocusPosition } | null;
     setActiveNode: (node: { index: number, position: FocusPosition } | null) => void;

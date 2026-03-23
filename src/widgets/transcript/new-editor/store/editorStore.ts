@@ -1,12 +1,12 @@
 import { create } from 'zustand';
-import type { EditorContextState, Sentence, EditorPlugin } from '../types';
+import type { EditorState, Sentence, EditorPlugin } from '../types';
 
 export interface SpeakerInfo {
     id: number;
     name: string;
 }
 
-export interface EditorStoreState extends EditorContextState {
+export interface EditorStoreState extends EditorState {
     setInitialData: (sentences: Sentence[], plugins: EditorPlugin[]) => void;
     updateSpeaker: (index: number, speakerId: number, speakerName: string | null) => void;
     renameSpeaker: (speakerId: number, newName: string) => void;

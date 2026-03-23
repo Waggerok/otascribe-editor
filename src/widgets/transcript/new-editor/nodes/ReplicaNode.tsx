@@ -100,10 +100,10 @@ export const ReplicaNode: React.FC<ReplicaNodeProps> = ({ index }) => {
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
         const nodeCtx = { index, sentence, editorRef };
-        const editorCtx = useEditorStore.getState();
+        const editorState = useEditorStore.getState();
         for (const plugin of plugins) {
             if (plugin.onKeyDown) {
-                const handled = plugin.onKeyDown(e, nodeCtx, editorCtx);
+                const handled = plugin.onKeyDown(e, nodeCtx, editorState);
                 if (handled) break; // Stop processing other plugins if handled
             }
         }
@@ -111,10 +111,10 @@ export const ReplicaNode: React.FC<ReplicaNodeProps> = ({ index }) => {
 
     const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
         const nodeCtx = { index, sentence, editorRef };
-        const editorCtx = useEditorStore.getState();
+        const editorState = useEditorStore.getState();
         for (const plugin of plugins) {
             if (plugin.onPaste) {
-                const handled = plugin.onPaste(e, nodeCtx, editorCtx);
+                const handled = plugin.onPaste(e, nodeCtx, editorState);
                 if (handled) break; // Stop processing other plugins if handled
             }
         }
