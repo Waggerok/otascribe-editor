@@ -12,7 +12,7 @@ export const Transcript: React.FC<TranscriptProps> = ({ contentValue }) => {
     const sentences = replicaData.transcription_result.sentences;
 
     return (
-        <TabsContent value={contentValue} className="h-full overflow-y-auto mt-0 pt-4 px-6 outline-none">
+        <TabsContent value={contentValue} className="h-full overflow-y-auto px-2 outline-none">
             <EditorProvider sentences={sentences} />
         </TabsContent>
     );

@@ -132,3 +132,20 @@ export const formatDate = (dateString: string) =>
         })
         .replace(/^(\d{1,2})\s([а-яА-Яa-zA-ZёЁ]+)\s(\d{4}),/, '$1 $2 $3 г.,');
 };
+
+export const formatMilliseconds: (milliseconds: number) => string = (milliseconds: number) =>
+{
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    // Pad the hours, minutes, and seconds with leading zeros if needed
+    const paddedHours = String(hours).padStart(2, '0');
+    const paddedMinutes = String(minutes).padStart(2, '0');
+    const paddedSeconds = String(seconds).padStart(2, '0');
+
+    if (hours == 0) return `${paddedMinutes}:${paddedSeconds}`;
+
+    return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
+};

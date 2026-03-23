@@ -1,5 +1,10 @@
 import React from 'react';
 
+export interface Speaker {
+    id: number
+    name: string
+}
+
 export interface Sentence {
     start_millis: number;
     end_millis: number;

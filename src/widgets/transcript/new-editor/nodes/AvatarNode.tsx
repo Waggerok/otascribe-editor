@@ -1,11 +1,8 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getInitials, getSpeakerColor } from '@/shared/utils/formatting';
 import { memo } from 'react';
+import type { Speaker } from '../types';
 
-export interface Speaker {
-    id: number
-    name: string
-}
 
 export const AvatarNode = memo(({ speaker }: { speaker: Speaker }) => {
     return (

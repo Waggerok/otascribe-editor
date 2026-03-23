@@ -7,6 +7,15 @@ export interface SpeakerInfo {
 }
 
 export interface EditorStoreState extends EditorState {
+    showUsers: boolean;
+    showTimings: boolean;
+    history: Sentence[][];
+    historyIndex: number;
+    undo: () => void;
+    redo: () => void;
+    pushHistory: (sentences: Sentence[]) => void;
+    toggleUsers: () => void;
+    toggleTimings: () => void;
     setInitialData: (sentences: Sentence[], plugins: EditorPlugin[]) => void;
     updateSpeaker: (index: number, speakerId: number, speakerName: string | null) => void;
     renameSpeaker: (speakerId: number, newName: string) => void;
@@ -15,32 +24,79 @@ export interface EditorStoreState extends EditorState {
 }
 
 export const useEditorStore = create<EditorStoreState>((set, get) => ({
+    showUsers: false,
+    showTimings: false,
+    toggleTimings: () => set((state) => ({ showTimings: !state.showTimings })),
+    toggleUsers: () => set((state) => ({ showUsers: !state.showUsers })),
     sentences: [],
+    history: [],
+    historyIndex: -1,
     activeNode: null,
     plugins: [],
 
-    setInitialData: (sentences, plugins) => set({ sentences, plugins }),
+    undo: () => set((state) => {
+        if (state.historyIndex > 0) {
+            const newIndex = state.historyIndex - 1;
+            return { 
+                sentences: state.history[newIndex],
+                historyIndex: newIndex
+            };
+        }
+        return state;
+    }),
 
-    updateSpeaker: (index, speakerId, speakerName) => set((state) => {
+    redo: () => set((state) => {
+        if (state.historyIndex < state.history.length - 1) {
+            const newIndex = state.historyIndex + 1;
+            return { 
+                sentences: state.history[newIndex],
+                historyIndex: newIndex
+            };
+        }
+        return state;
+    }),
+
+    pushHistory: (newSentences) => set((state) => {
+        // Remove future history if we're not at the end
+        const currentHistory = state.history.slice(0, state.historyIndex + 1);
+        return {
+            history: [...currentHistory, newSentences],
+            historyIndex: currentHistory.length
+        };
+    }),
+
+    setInitialData: (sentences, plugins) => set({ 
+        sentences, 
+        plugins,
+        history: [sentences],
+        historyIndex: 0
+    }),
+
+    updateSpeaker: (index, speakerId, speakerName) => {
+        const state = get();
         const newSentences = [...state.sentences];
         newSentences[index] = {
             ...newSentences[index],
             speaker_id: speakerId,
             speaker_name: speakerName
         };
-        return { sentences: newSentences };
-    }),
+        state.pushHistory(newSentences);
+        set({ sentences: newSentences });
+    },
 
-    renameSpeaker: (speakerId, newName) => set((state) => {
+    renameSpeaker: (speakerId, newName) => {
+        const state = get();
         const newSentences = state.sentences.map(s => 
             s.speaker_id === speakerId 
                 ? { ...s, speaker_name: newName }
                 : s
         );
-        return { sentences: newSentences };
-    }),
+        state.pushHistory(newSentences);
+        set({ sentences: newSentences });
+    },
 
-    deleteSpeaker: (speakerId) => set((state) => {
+    deleteSpeaker: (speakerId) => {
+        const state = get();
         const speakersMap = new Map<number, string | null>();
         state.sentences.forEach(s => {
             if (!speakersMap.has(s.speaker_id)) {
@@ -50,7 +106,7 @@ export const useEditorStore = create<EditorStoreState>((set, get) => ({
         
         const allIds = Array.from(speakersMap.keys());
         if (allIds.length <= 1) {
-            return state; // Can't delete the last speaker
+            return; // Can't delete the last speaker
         }
         
         const fallbackId = allIds.find(id => id !== speakerId) ?? allIds[0];
@@ -61,8 +117,9 @@ export const useEditorStore = create<EditorStoreState>((set, get) => ({
                 ? { ...s, speaker_id: fallbackId, speaker_name: fallbackName }
                 : s
         );
-        return { sentences: newSentences };
-    }),
+        state.pushHistory(newSentences);
+        set({ sentences: newSentences });
+    },
 
     getUniqueSpeakers: () => {
         const state = get();
@@ -77,16 +134,19 @@ export const useEditorStore = create<EditorStoreState>((set, get) => ({
 
     setActiveNode: (node) => set({ activeNode: node }),
 
-    updateSentence: (index, newHtml) => set((state) => {
+    updateSentence: (index, newHtml) => {
+        const state = get();
         const newSentences = [...state.sentences];
         newSentences[index] = {
             ...newSentences[index],
             text: newHtml
         };
-        return { sentences: newSentences };
-    }),
+        state.pushHistory(newSentences);
+        set({ sentences: newSentences });
+    },
 
-    splitSentence: (index, htmlBefore, htmlAfter) => set((state) => {
+    splitSentence: (index, htmlBefore, htmlAfter) => {
+        const state = get();
         const currentSentence = state.sentences[index];
         const newSentences = [...state.sentences];
         
@@ -100,11 +160,12 @@ export const useEditorStore = create<EditorStoreState>((set, get) => ({
             text: htmlAfter
         });
         
-        return { 
+        state.pushHistory(newSentences);
+        set({ 
             sentences: newSentences,
             activeNode: { index: index + 1, position: 'start' }
-        };
-    }),
+        });
+    },
 
     mergeWithPrevious: (index, htmlToMerge) => {
         const state = get();
@@ -133,6 +194,7 @@ export const useEditorStore = create<EditorStoreState>((set, get) => ({
             };
 
             newSentences.splice(index, 1);
+            state.pushHistory(newSentences);
             set({
                 sentences: newSentences,
                 activeNode: { index: index - 1, position: newCursorPos }
