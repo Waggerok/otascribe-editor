@@ -3,7 +3,6 @@ import { ReplicaNode } from './nodes/ReplicaNode';
 import { BasePlugins } from './plugins';
 import type { Sentence, EditorPlugin } from './types';
 import { useEditorStore } from './store/editorStore';
-import { Menu } from './Menu';
 
 interface EditorProviderProps {
     sentences: Sentence[];
