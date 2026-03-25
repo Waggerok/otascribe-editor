@@ -30,7 +30,6 @@ const EditorProvider: React.FC<EditorProviderProps> = ({
 
     return (
         <div className="flex flex-col h-200">
-            <Menu/>
             <div className="flex flex-col overflow-auto overflow-x-hidden">
                 {renderNodes}
             </div>

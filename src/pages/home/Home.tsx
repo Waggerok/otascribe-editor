@@ -1,10 +1,13 @@
 import { Button } from '@/components/ui/button';
+import { ButtonGroup } from '@/components/ui/button-group';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ACCESS_TOKEN_KEY, LOGIN_KEY, PASSWORD_KEY } from '@/shared';
 import api from '@/shared/generated/api';
 import { ResumeIcon, TranscribeIcon } from '@/shared/icons';
 import { Resume, Transcript } from '@/widgets';
+import { Menu } from '@/widgets/transcript/new-editor/Menu';
+import { DownloadIcon } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import React from 'react';
 
@@ -44,19 +47,38 @@ const Home: React.FC = () => {
             <div className="flex items-center justify-center p-4">
                 <div className="flex flex-col w-full">
                     <Tabs value={activeTab} onValueChange={handleTabChange} className='w-full'>
-                        <div className="flex justify-end w-full flex-wrap items-end gap-4">
-                            <TabsList>
-                                <TabsTrigger value="transcript">
-                                    <TranscribeIcon /> Транскрибация
-                                </TabsTrigger>
-                                <TabsTrigger value="resume">
-                                    <ResumeIcon /> Резюме
-                                </TabsTrigger>
-                            </TabsList>
-                        </div>
+                        <Card className="flex w-full p-6">
+                            <div className="flex justify-between">
+                                {activeTab === 'transcript' ? <Menu /> : <div />}
+                                <div className="flex gap-1">
 
+                                    <ButtonGroup>
+                                        {activeTab === 'transcript' 
+                                            ?
+                                            <Button>
+                                                <TranscribeIcon/>
+                                            </Button>
+                                            :
+                                            <Button>
+                                                <ResumeIcon/>
+                                            </Button>
+                                        }
 
-                        <Card className="w-full p-6">
+                                        <Button>
+                                            <DownloadIcon/>
+                                        </Button>
+                                    </ButtonGroup>
+                                    
+                                    <TabsList>
+                                        <TabsTrigger value="transcript">
+                                            <TranscribeIcon /> Транскрибация
+                                        </TabsTrigger>
+                                        <TabsTrigger value="resume">
+                                            <ResumeIcon /> Резюме
+                                        </TabsTrigger>
+                                    </TabsList>
+                                </div>
+                            </div>
                             <Transcript contentValue="transcript" />
                             <Resume contentValue="resume" />
                         </Card>
