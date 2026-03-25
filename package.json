@@ -9,13 +9,15 @@
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "openapi": "openapi-generator-cli generate -i src/shared/generated/api/openapi.json -g typescript-axios -o src/shared/generated/api/generated --skip-validate-spec"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/react-hotkeys": "^0.4.2",
     "MD5": "^1.3.0",
+    "axios": "^1.13.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.577.0",
