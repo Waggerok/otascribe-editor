@@ -6,7 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ACCESS_TOKEN_KEY, LOGIN_KEY, PASSWORD_KEY } from '@/shared';
 import api from '@/shared/generated/api';
-import type { OtaProject } from '@/shared/generated/api/generated';
+import { ProjectStatus, type OtaProject } from '@/shared/generated/api/generated';
 import { useProjects } from '@/shared/hooks/projects/use-projects';
 import { ResumeIcon, TranscribeIcon } from '@/shared/icons';
 import { Resume, Transcript } from '@/widgets';
@@ -14,7 +14,7 @@ import { Menu } from '@/widgets/transcript/new-editor/Menu';
 import { ChevronDownIcon, DownloadIcon } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import React, { useEffect, useState } from 'react';
-import type { Sentence } from '@/widgets/transcript/new-editor/types';
+import { generateRecord } from '@/shared/types/transcription/record';
 
 const Home: React.FC = () => {
 
@@ -45,37 +45,52 @@ const Home: React.FC = () => {
     const { projects } = useProjects();
     const currentProject = useProjectStore(state => state.currentProject);
     const setCurrentProject = useProjectStore(state => state.setCurrentProject);
-
-    // Локальное состояние для загруженных предложений
-    const [projectSentences, setProjectSentences] = useState<Sentence[] | undefined>(undefined);
+    const setOriginalRecord = useProjectStore(state => state.setOriginalRecord);
+    const setEditableRecord = useProjectStore(state => state.setEditableRecord);
+    const loadOptions = useProjectStore(state => state.loadOptions);
+    const reset = useProjectStore(state => state.reset);
 
     useEffect(() => {
-        const fetchProjectDetails = async () => {
+        const fetchProject = async () => {
+
             if (!currentProject?.project_id) return;
+
             try {
-                const response = await api.ProjectsApi.getUserProjectApiProjectProjectIdGet(currentProject.project_id);
-                const transcriptionData = response.data.editable_transcription_result || response.data.transcription_result;
-                const sentences = transcriptionData?.sentences;
-                
-                if (sentences) {
-                    const mappedSentences: Sentence[] = sentences.map((s) => ({
-                        start_millis: s.start_millis ?? 0,
-                        end_millis: s.end_millis ?? 0,
-                        text: s.text ?? '',
-                        speaker_id: s.speaker_id ?? 0,
-                        speaker_name: s.speaker_name ?? null
-                    }));
-                    setProjectSentences(mappedSentences);
-                } else {
-                    setProjectSentences(undefined);
-                }
-            } catch (e) {
-                console.error('Ошибка при получении деталей проекта', e);
+
+                const response = await api.ProjectsApi.getUserProjectApiProjectProjectIdGet(
+                    currentProject?.project_id,
+                );
+
+                const project = response.data;
+                setCurrentProject(project);
+
+                if (project.status === ProjectStatus.Ok || (project.editable_transcription_result || project.transcription_result)) {
+                    if (project.transcription_result) {
+                        setOriginalRecord(generateRecord(project));
+                    }
+                    if (project.editable_transcription_result) {
+                        setEditableRecord(generateRecord(project, true));
+                    }
+                };
+
+                console.log('Текущий проект: ', project);
+                loadOptions();
+
+            }
+            catch (error: any) {
+                console.log(error)
             }
         };
+        
+        fetchProject();
+        
+    }, [currentProject?.project_id, loadOptions, setCurrentProject, setOriginalRecord, setEditableRecord])
 
-        fetchProjectDetails();
-    }, [currentProject?.project_id]);
+    useEffect(() => {
+        return () => {
+            reset()
+        }
+    }, [reset])
 
     return (
         <div className='h-screen flex flex-col'>
@@ -96,8 +111,8 @@ const Home: React.FC = () => {
                         <DropdownMenuContent>
                             {projects.length > 0 ? (
                                 projects.map((project) => (
-                                    <DropdownMenuItem 
-                                        key={project.project_id} 
+                                    <DropdownMenuItem
+                                        key={project.project_id}
                                         onClick={() => setCurrentProject(project as unknown as OtaProject)}
                                         className="cursor-pointer"
                                     >
@@ -152,7 +167,7 @@ const Home: React.FC = () => {
                                     </TabsList>
                                 </div>
                             </div>
-                            <Transcript contentValue="transcript" sentences={projectSentences} />
+                            <Transcript contentValue="transcript" />
                             <Resume contentValue="resume" />
                         </Card>
                     </Tabs>

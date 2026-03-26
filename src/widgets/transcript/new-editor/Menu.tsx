@@ -19,7 +19,7 @@ export const Menu: React.FC = () => {
     const canRedo = useEditorStore(state => state.historyIndex < state.history.length - 1);
 
     return (
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2">
             <ButtonGroup>
                 <Button variant="outline" onClick={undo} disabled={!canUndo}>
                     <Undo2Icon />
