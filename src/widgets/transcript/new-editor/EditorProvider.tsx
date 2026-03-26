@@ -1,31 +1,41 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { ReplicaNode } from './nodes/ReplicaNode';
-import { BasePlugins } from './plugins';
-import type { Sentence, EditorPlugin } from './types';
+import type { EditorPlugin } from './types';
+import { useProjectStore } from '@/app/stores/project.store';
 import { useEditorStore } from './store/editorStore';
 
 interface EditorProviderProps {
-    sentences: Sentence[];
     plugins?: EditorPlugin[];
 }
 
-const EditorProvider: React.FC<EditorProviderProps> = ({
-    sentences: initialSentences,
-    plugins = BasePlugins
-}) => {
+const EditorProvider: React.FC<EditorProviderProps> = ({ plugins }) => {
 
-    const sentencesLength = useEditorStore(state => state.sentences.length);
-    const setInitialData = useEditorStore(state => state.setInitialData);
+    const originalRecord = useProjectStore(state => state.originalRecord);
+    const editableRecord = useProjectStore(state => state.editableRecord);
     
+    const record = editableRecord || originalRecord;
+
     useEffect(() => {
-        setInitialData(initialSentences, plugins);
-    }, [initialSentences, plugins, setInitialData]);
+        useEditorStore.setState({ plugins: plugins || [] });
+    }, [plugins]);
+
+    useEffect(() => {
+        if (originalRecord) {
+            useEditorStore.setState({ 
+                history: [editableRecord || originalRecord],
+                historyIndex: 0
+            });
+        } else {
+            useEditorStore.setState({ history: [], historyIndex: -1 });
+        }
+    }, [originalRecord]);
 
     const renderNodes = useMemo(() => {
-        return Array.from({ length: sentencesLength }).map((_, index) => (
-            <ReplicaNode key={index} index={index} />
-        ));
-    }, [sentencesLength]);
+        if (!record) return null;
+        return record.sentenses.map((sentence, index) => {
+            return <ReplicaNode key={sentence.id ?? index} index={index} sentence={sentence} />;
+        });
+    }, [record]);
 
     return (
         <div className="flex flex-col h-200">

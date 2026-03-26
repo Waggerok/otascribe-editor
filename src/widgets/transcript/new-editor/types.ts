@@ -1,23 +1,16 @@
 import React from 'react';
+import type { Sentense } from '@/shared/types/transcription/record';
 
 export interface Speaker {
     id: number
     name: string
 }
 
-export interface Sentence {
-    start_millis: number;
-    end_millis: number;
-    text: string;
-    speaker_id: number;
-    speaker_name: string | null;
-}
-
 export type FocusPosition = 'start' | 'end' | number | null;
 
 export interface EditorNodeContext {
     index: number;
-    sentence: Sentence;
+    sentence: Sentense;
     editorRef: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -29,7 +22,6 @@ export interface EditorPlugin {
 }
 
 export interface EditorState {
-    sentences: Sentence[];
     activeNode: { index: number, position: FocusPosition } | null;
     setActiveNode: (node: { index: number, position: FocusPosition } | null) => void;
     updateSentence: (index: number, newHtml: string) => void;

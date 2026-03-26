@@ -13,8 +13,9 @@ import { Resume, Transcript } from '@/widgets';
 import { Menu } from '@/widgets/transcript/new-editor/Menu';
 import { ChevronDownIcon, DownloadIcon } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { generateRecord } from '@/shared/types/transcription/record';
+import SaveMenu, { useAutoSaveState } from '@/widgets/transcript/new-editor/SaveMenu';
 
 const Home: React.FC = () => {
 
@@ -25,6 +26,8 @@ const Home: React.FC = () => {
     const handleTabChange = (value: string) => {
         setActiveTab(value as 'transcript' | 'resume')
     };
+
+    const { textColor, autoSaveState } = useAutoSaveState();
 
     //Api logic
 
@@ -49,6 +52,7 @@ const Home: React.FC = () => {
     const setEditableRecord = useProjectStore(state => state.setEditableRecord);
     const loadOptions = useProjectStore(state => state.loadOptions);
     const reset = useProjectStore(state => state.reset);
+    
 
     useEffect(() => {
         const fetchProject = async () => {
@@ -136,7 +140,7 @@ const Home: React.FC = () => {
             <div className="flex items-center justify-center p-4">
                 <div className="flex flex-col w-full">
                     <Tabs value={activeTab} onValueChange={handleTabChange} className='w-full'>
-                        <Card className="flex w-full p-6 min-h-40">
+                        <Card className="flex w-full p-4 min-h-40 gap-0">
                             <div className="flex justify-between">
                                 {activeTab === 'transcript' ? <Menu /> : <div />}
                                 <div className="flex gap-1">
@@ -169,6 +173,7 @@ const Home: React.FC = () => {
                             </div>
                             <Transcript contentValue="transcript" />
                             <Resume contentValue="resume" />
+                            {activeTab === 'transcript' ? <SaveMenu color={textColor} state={autoSaveState} /> : <></>}
                         </Card>
                     </Tabs>
                 </div>

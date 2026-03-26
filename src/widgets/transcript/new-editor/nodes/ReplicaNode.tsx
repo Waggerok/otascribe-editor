@@ -2,18 +2,21 @@ import React, { useRef, useEffect } from 'react';
 import { useEditorStore } from '../store/editorStore';
 import { SpeakerDropdown } from './SpeakerDropdown';
 import TimeNode from './TimeNode';
+import type { Sentense } from '@/shared/types/transcription/record';
+import { useProjectStore } from '@/app/stores/project.store';
 
 interface ReplicaNodeProps {
     index: number;
+    sentence: Sentense;
 }
 
-const ReplicaNodeComponent: React.FC<ReplicaNodeProps> = ({ index }) => {
+const ReplicaNodeComponent: React.FC<ReplicaNodeProps> = ({ index, sentence }) => {
     const editorRef = useRef<HTMLDivElement>(null);
     
-    const sentence = useEditorStore(state => state.sentences[index]);
-    const showTimings = useEditorStore(state => state.showTimings);
+    const timeMarks = useProjectStore(state => state.timeMarks);
+    const transcriptionTaskParams = useProjectStore(state => state.transcriptionTaskParams);
+
     const plugins = useEditorStore(state => state.plugins);
-    const showUsers = useEditorStore(state => state.showUsers);
     const focusPosition = useEditorStore(state =>  state.activeNode?.index === index ? state.activeNode.position : null);
     
     const updateSentence = useEditorStore(state => state.updateSentence);
@@ -121,8 +124,8 @@ const ReplicaNodeComponent: React.FC<ReplicaNodeProps> = ({ index }) => {
 
     return (
         <div className="flex gap-4 items-start hover:bg-white/5 p-2 -mx-2 rounded-lg transition-colors">
-            {showUsers && <SpeakerDropdown sentenceIndex={index} />}
-            {showTimings && <TimeNode startMilliseconds={sentence.start_millis} endMilliseconds={sentence.end_millis} />}
+            {transcriptionTaskParams.is_diarization && <SpeakerDropdown sentenceIndex={index} />}
+            {timeMarks && <TimeNode startMilliseconds={sentence.start} endMilliseconds={sentence.end} />}
             <div
                 ref={editorRef}
                 className="flex-1 text-[15px] leading-relaxed text-gray-200 outline-none cursor-text wrap-break-word whitespace-pre-wrap"

@@ -5,6 +5,7 @@ import { useEditorStore } from '../store/editorStore';
 import type { SpeakerInfo } from '../store/editorStore';
 import { AvatarNode } from './AvatarNode';
 import { Button } from '@/components/ui/button';
+import { useProjectStore } from '@/app/stores/project.store';
 
 interface SpeakerDropdownProps {
     sentenceIndex: number;
@@ -16,8 +17,13 @@ export const SpeakerDropdown: React.FC<SpeakerDropdownProps> = ({ sentenceIndex 
     const deleteSpeaker = useEditorStore(state => state.deleteSpeaker);
     const getUniqueSpeakers = useEditorStore(state => state.getUniqueSpeakers);
 
-    const speakerId = useEditorStore(state => state.sentences[sentenceIndex]?.speaker_id);
-    const speakerName = useEditorStore(state => state.sentences[sentenceIndex]?.speaker_name);
+    const editableRecord = useProjectStore(state => state.editableRecord);
+    const originalRecord = useProjectStore(state => state.originalRecord);
+    const record = editableRecord || originalRecord;
+
+    const sentence = record?.sentenses[sentenceIndex];
+    const speakerId = sentence?.speaker?.id;
+    const speakerName = sentence?.speaker?.name;
 
     const [uniqueSpeakers, setUniqueSpeakers] = useState<SpeakerInfo[]>([]);
     const [editingSpeakerId, setEditingSpeakerId] = useState<number | null>(null);
@@ -38,7 +44,7 @@ export const SpeakerDropdown: React.FC<SpeakerDropdownProps> = ({ sentenceIndex 
         const maxId = uniqueSpeakers.length > 0 ? Math.max(...uniqueSpeakers.map(s => s.id)) : 0;
         const newId = maxId + 1;
         const newName = `C${newId + 1}`;
-        updateSpeaker(sentenceIndex, newId, newName);
+        updateSpeaker(sentenceIndex, newName);
     };
 
     const handleSaveEdit = (speakerId: number) => {
@@ -74,7 +80,7 @@ export const SpeakerDropdown: React.FC<SpeakerDropdownProps> = ({ sentenceIndex 
                                 key={speaker.id}
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    updateSpeaker(sentenceIndex, speaker.id, speaker.name);
+                                    updateSpeaker(sentenceIndex, speaker.name);
                                 }}
                                 className={speaker.id === speakerId && !isEditing ? "bg-accent" : ""}
                             >

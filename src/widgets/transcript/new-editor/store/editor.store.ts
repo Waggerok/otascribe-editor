@@ -1,6 +1,5 @@
 import { create } from "zustand";
-import type { Speaker } from "../types";
-import type { Sentense } from "@/shared/types/transcription/record";
+import type { Sentense, Speaker } from "@/shared/types/transcription/record";
 
 interface State {
     speakers: Speaker[]
