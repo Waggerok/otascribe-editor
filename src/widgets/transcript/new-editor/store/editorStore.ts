@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { EditorState } from '../types';
 import { useProjectStore } from '@/app/stores/project.store';
 import type { Sentense, IRecord } from '@/shared/types/transcription/record';
+import { BasePlugins } from '../plugins';
 
 export interface SpeakerInfo {
     id: number;
@@ -42,7 +43,7 @@ export const useEditorStore = create<EditorStoreState>((set, get) => ({
     history: [],
     historyIndex: -1,
     activeNode: null,
-    plugins: [],
+    plugins: BasePlugins,
 
     undo: () => {
         const state = get();

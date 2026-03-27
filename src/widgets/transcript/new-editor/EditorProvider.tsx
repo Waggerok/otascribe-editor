@@ -1,35 +1,18 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, type RefObject } from 'react';
 import { ReplicaNode } from './nodes/ReplicaNode';
-import type { EditorPlugin } from './types';
-import { useProjectStore } from '@/app/stores/project.store';
-import { useEditorStore } from './store/editorStore';
+import type { IRecord } from '@/shared/types/transcription/record';
 
 interface EditorProviderProps {
-    plugins?: EditorPlugin[];
+    record: IRecord
+    saveReference: RefObject<() => void>;
+    cancelReference: RefObject<() => void>;
+    hasChanges: boolean;
+    setHasChanges: (value: boolean) => void;
+    onRemoveLastReplica: () => void;
 }
 
-const EditorProvider: React.FC<EditorProviderProps> = ({ plugins }) => {
-
-    const originalRecord = useProjectStore(state => state.originalRecord);
-    const editableRecord = useProjectStore(state => state.editableRecord);
-    
-    const record = editableRecord || originalRecord;
-
-    useEffect(() => {
-        useEditorStore.setState({ plugins: plugins || [] });
-    }, [plugins]);
-
-    useEffect(() => {
-        if (originalRecord) {
-            useEditorStore.setState({ 
-                history: [editableRecord || originalRecord],
-                historyIndex: 0
-            });
-        } else {
-            useEditorStore.setState({ history: [], historyIndex: -1 });
-        }
-    }, [originalRecord]);
-
+const EditorProvider: React.FC<EditorProviderProps> = ({ cancelReference, saveReference, hasChanges, setHasChanges, record, onRemoveLastReplica }) =>
+{
     const renderNodes = useMemo(() => {
         if (!record) return null;
         return record.sentenses.map((sentence, index) => {

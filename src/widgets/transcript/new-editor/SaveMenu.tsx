@@ -26,6 +26,8 @@ const STATE_COLORS =
 interface AutoSaveStatusProperties {
     state: string;
     color: string;
+    handleSave : () => void;
+    handleCancel : () => void;
 }
 
 /**
@@ -35,7 +37,7 @@ interface AutoSaveStatusProperties {
  * @param {string} color - color
  *
  */
-const SaveMenu: React.FC<AutoSaveStatusProperties> = ({ state, color }) => {
+const SaveMenu: React.FC<AutoSaveStatusProperties> = ({ state, color, handleCancel, handleSave }) => {
 
     const editorAutosave = useProjectStore(state => state.editorAutosave);
     if (!state) return null;
@@ -58,8 +60,8 @@ const SaveMenu: React.FC<AutoSaveStatusProperties> = ({ state, color }) => {
 
             {!editorAutosave &&
                 <div className="flex items-center gap-2">
-                    <Button variant='outline'>Отмена</Button>
-                    <Button variant='outline'>Сохранить</Button>
+                    <Button variant='outline' onClick={handleCancel}>Отмена</Button>
+                    <Button variant='outline' onClick={handleSave}>Сохранить</Button>
                 </div>
             }
         </div>

@@ -15,7 +15,6 @@ import { ChevronDownIcon, DownloadIcon } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import React, { useEffect } from 'react';
 import { generateRecord } from '@/shared/types/transcription/record';
-import SaveMenu, { useAutoSaveState } from '@/widgets/transcript/new-editor/SaveMenu';
 
 const Home: React.FC = () => {
 
@@ -26,8 +25,6 @@ const Home: React.FC = () => {
     const handleTabChange = (value: string) => {
         setActiveTab(value as 'transcript' | 'resume')
     };
-
-    const { textColor, autoSaveState } = useAutoSaveState();
 
     //Api logic
 
@@ -173,7 +170,6 @@ const Home: React.FC = () => {
                             </div>
                             <Transcript contentValue="transcript" />
                             <Resume contentValue="resume" />
-                            {activeTab === 'transcript' ? <SaveMenu color={textColor} state={autoSaveState} /> : <></>}
                         </Card>
                     </Tabs>
                 </div>
